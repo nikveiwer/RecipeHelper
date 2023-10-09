@@ -1,6 +1,6 @@
 <template>
     <div class="title">This is index page</div>
-    <NuxtLink to="/anotherPage">to another page</NuxtLink>
+    <NuxtLink to="/RecipeSocial/Home">to another page</NuxtLink>
 </template>
 <script>
 export default {};
