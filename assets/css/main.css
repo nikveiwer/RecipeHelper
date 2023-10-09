@@ -7,7 +7,11 @@
 }
 
 :root {
-    --main-color: #29a383;
+    --main-color: #acdec8;
+    --bg-color: white;
+    --text-color: #2e3e5c;
+    --secondary-text: #9fa5c0;
+    --form: #f4f5f7;
 }
 
 @font-face {
@@ -71,9 +75,9 @@ h4 {
 }
 
 /* A elements that don't have a class get default styles */
-a:not([class]) {
+a {
     text-decoration-skip-ink: auto;
-    color: currentColor;
+    color: var(--text-color);
 }
 
 /* Make images easier to work with */
@@ -99,4 +103,14 @@ textarea:not([rows]) {
 /* Anything that has been anchored to should have extra scroll margin */
 :target {
     scroll-margin-block: 5ex;
+}
+
+.popup-enter-active,
+.popup-leave-active {
+    transition: opacity 0.25s ease;
+}
+
+.popup-enter-from,
+.popup-leave-to {
+    opacity: 0;
 }

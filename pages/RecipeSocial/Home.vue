@@ -1,6 +1,5 @@
 <template>
-    <div>Another Page</div>
-    <NuxtLink to="/">back</NuxtLink>
+    <section></section>
 </template>
 <script>
 export default {};
