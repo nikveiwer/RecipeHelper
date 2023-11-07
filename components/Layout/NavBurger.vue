@@ -19,16 +19,13 @@
                     <DropdownMenuItem
                         v-for="{ descr, href } in links"
                         value="New Tab"
-                        :class="$style.menuItem"
+                        :class="{
+                            [$style.menuItem]: true,
+                            [$style.isCurrentLink]:
+                                route.fullPath.includes(href),
+                        }"
                     >
-                        <NuxtLink
-                            :class="{
-                                [$style.isCurrentLink]:
-                                    route.fullPath.includes(href),
-                            }"
-                            :to="href"
-                            >{{ descr }}</NuxtLink
-                        >
+                        <NuxtLink :to="href">{{ descr }}</NuxtLink>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </Transition>
@@ -47,7 +44,7 @@ import {
     DropdownMenuTrigger,
 } from "radix-vue";
 
-import { MenuLinks as links } from "./MenuLinks";
+import { MenuLinks as links } from "../../static/MenuLinks";
 
 const toggleState = ref(false);
 
@@ -94,10 +91,17 @@ const route = useRoute();
     text-align: center;
     text-decoration: underline;
     outline: none;
-    color: var(--text-color);
+    color: var(--main-color);
+}
+
+.menuItem a {
+    color: var(--main-color);
 }
 
 .isCurrentLink {
-    color: var(--main-color);
+    color: var(--text-color);
+}
+.isCurrentLink a {
+    color: var(--text-color);
 }
 </style>

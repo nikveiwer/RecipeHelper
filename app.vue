@@ -1,5 +1,5 @@
 <template>
-    <header>
+    <header :class="$style.header">
         <nav :class="$style.navbar">
             <NuxtLink to="/" :class="$style.mainLink">
                 <Icon
@@ -13,27 +13,26 @@
             <NavBurger :class="$style.navBurger"></NavBurger>
         </nav>
     </header>
-    <div :class="$style.container">
+    <main :class="$style.container">
         <NuxtLoadingIndicator></NuxtLoadingIndicator>
         <NuxtPage></NuxtPage>
-    </div>
+    </main>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { Icon } from "@iconify/vue";
 import NavBurger from "~/components/Layout/NavBurger.vue";
 import NavMenu from "~/components/Layout/NavMenu.vue";
-
-export default {
-    components: {
-        Icon,
-        NavBurger,
-        NavMenu,
-    },
-};
 </script>
 
 <style module>
+.header {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 100;
+}
+
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -65,7 +64,11 @@ export default {
 }
 
 .container {
-    padding: 0 24px;
+    padding: 58px 24px 0 24px;
+    position: absolute;
+    top: 0;
+    min-width: 100%;
+    min-height: 100vh;
 }
 
 @container navBar (min-width: 1024px) {
@@ -74,7 +77,7 @@ export default {
     }
 
     .navMenu {
-        display: block;
+        display: flex;
     }
 }
 </style>

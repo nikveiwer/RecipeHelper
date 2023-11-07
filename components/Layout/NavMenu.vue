@@ -1,13 +1,13 @@
 <template>
     <ul :class="$style.menuWrapper" role="list">
         <li v-for="{ descr, href } in links" :class="$style.menuItem">
-            <NuxtLink :to="href">{{ descr }}</NuxtLink>
+            <NuxtLink :to="href" tabindex>{{ descr }}</NuxtLink>
         </li>
     </ul>
 </template>
 
 <script setup lang="ts">
-import { MenuLinks as links } from "./MenuLinks";
+import { MenuLinks as links } from "../../static/MenuLinks";
 
 const route = useRoute();
 </script>
