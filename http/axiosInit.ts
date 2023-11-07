@@ -1,5 +1,5 @@
 import axios from "axios";
-import { RefreshRespons } from "~/models/user/refresh";
+import { RefreshRespons } from "~/models/auth/refresh";
 
 export const $api = axios.create({
     baseURL: process.env.NUXT_API_URL ?? "http://localhost:8080/rh",
@@ -26,7 +26,9 @@ $api.interceptors.response.use(
                     process.env.NUXT_API_URL ?? "http://localhost:8080/rh"
                 }/users/refresh`;
 
-                const response = await axios.get<RefreshRespons>(refreshUrl);
+                const response = await axios.get<RefreshRespons>(refreshUrl, {
+                    withCredentials: true,
+                });
 
                 localStorage.setItem("token", response.data.token);
 

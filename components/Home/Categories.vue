@@ -6,7 +6,7 @@
                     $style.category,
                     value === chosenCategory && $style.chosenCategory,
                 ]"
-                @click="chosenCategory = value"
+                @click="onCategoryChanged(value)"
             >
                 {{ title }}
             </button>
@@ -15,9 +15,23 @@
 </template>
 
 <script setup lang="ts">
+import authService from "~/service/authService";
 import { categories, type CategoryValue } from "../../static/Categories";
 
 const chosenCategory: Ref<CategoryValue> = ref("all");
+
+const onCategoryChanged = async (newValue: CategoryValue) => {
+    chosenCategory.value = newValue;
+
+    try {
+        const data = await authService.authTest(
+            "0efc318b-df75-4df8-ada1-cf228d9cbcda"
+        );
+        console.log(data);
+    } catch (e: any) {
+        console.log(e);
+    }
+};
 </script>
 
 <style module>
@@ -43,7 +57,7 @@ const chosenCategory: Ref<CategoryValue> = ref("all");
 }
 
 .category:focus {
-    border: 2px solid var(--text-color);
+    border: 2px solid var(--darker-main, #12a594);
 }
 
 .chosenCategory {
