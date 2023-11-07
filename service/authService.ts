@@ -1,7 +1,7 @@
 import { $api } from "~/http/axiosInit";
 import { AxiosResponse } from "axios";
-import { RegisterResponse } from "~/models/user/register";
-import { LoginRequest, LoginResponse } from "~/models/user/login";
+import { RegisterResponse } from "~/models/auth/register";
+import { LoginRequest, LoginResponse } from "~/models/auth/login";
 
 export default class AuthService {
     static async register(
@@ -24,5 +24,9 @@ export default class AuthService {
             usernameOrEmail,
             password,
         });
+    }
+
+    static async authTest(userId: string): Promise<AxiosResponse<any>> {
+        return $api.get<any>(`/healthcheck/${userId}`);
     }
 }

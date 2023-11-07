@@ -3,6 +3,9 @@
     <Title tag="h3" :class="$style.title">
         <template>Category</template>
     </Title>
+    <div v-if="user">
+        {{ user }}
+    </div>
     <Categories></Categories>
 </template>
 
@@ -10,6 +13,9 @@
 import Search from "./Search.vue";
 import Title from "../GeneralComponents/Title.vue";
 import Categories from "./Categories.vue";
+import { useUser } from "~/composables/userState";
+
+const user = useUser();
 </script>
 
 <style module>

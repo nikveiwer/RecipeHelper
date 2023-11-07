@@ -85,6 +85,11 @@
                 :rules="passwordRules"
                 v-if="!isSignIn && validVisible"
             ></PasswordValid>
+
+            <NuxtLink :class="$style.forgottenPassword"
+                >forgot your password?</NuxtLink
+            >
+
             <MainButton
                 :disabled="!isValid || isLoading"
                 :class="$style.button"
@@ -112,6 +117,8 @@ import MainButton from "~/components/GeneralComponents/MainButton.vue";
 import PasswordValid from "~/components/Authorization/PasswordValid.vue";
 
 import AuthService from "~/service/authService";
+import { useUser } from "~/composables/userState";
+import { IUser } from "~/models/User";
 
 export interface Rules {
     [prop: string]: boolean;
@@ -133,6 +140,8 @@ const passwordRules: Ref<Rules> = ref({
     "Contains a number": false,
 });
 
+const user = useUser();
+
 const isSignIn = computed(() => route.params.type === "SignIn");
 const isValid = computed(
     () =>
@@ -151,13 +160,17 @@ const onSignUp = async () => {
     isLoading.value = true;
 
     try {
-        const { data } = await AuthService.register(
+        const {
+            data: { token, ...userInfo },
+        } = await AuthService.register(
             username.value,
             email.value,
             password.value
         );
 
-        localStorage.setItem("token", data.token);
+        user.value = userInfo;
+
+        localStorage.setItem("token", token);
         router.push("/");
     } catch (e: any) {
         console.log(e);
@@ -186,12 +199,43 @@ const onSignIn = async () => {
     isLoading.value = false;
 };
 
-const onSubmit = () => {
-    if (isSignIn.value) {
-        onSignIn();
-    } else {
-        onSignUp();
+const onSubmit = async () => {
+    isLoading.value = true;
+
+    let token: string;
+    let userInfo: IUser;
+
+    try {
+        if (isSignIn.value) {
+            const {
+                data: { token: tokenRes, ...userInfoRes },
+            } = await AuthService.login(username.value, password.value);
+
+            token = tokenRes;
+            userInfo = userInfoRes;
+        } else {
+            const {
+                data: { token: tokenRes, ...userInfoRes },
+            } = await AuthService.register(
+                username.value,
+                email.value,
+                password.value
+            );
+
+            token = tokenRes;
+            userInfo = userInfoRes;
+        }
+
+        user.value = userInfo;
+
+        localStorage.setItem("token", token);
+        router.push("/");
+    } catch (e: any) {
+        console.log(e);
+        serverError.value = e.response.data.error;
     }
+
+    isLoading.value = false;
 };
 </script>
 
@@ -274,5 +318,21 @@ const onSubmit = () => {
     font-style: normal;
     font-weight: 700;
     letter-spacing: 0.5px;
+}
+
+.forgottenPassword {
+    display: block;
+    margin-top: 24px;
+    text-align: right;
+    color: var(--text-color, #2e3e5c);
+    font-feature-settings: "clig" off, "liga" off;
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 500;
+}
+
+.forgottenPassword:hover {
+    text-decoration: underline;
+    cursor: pointer;
 }
 </style>
