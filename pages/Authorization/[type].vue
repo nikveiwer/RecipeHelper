@@ -3,7 +3,10 @@
         <h3 :class="$style.title">Welcome{{ isSignIn ? " Back" : "" }}!</h3>
         <h2 :class="$style.subtitle">Please enter your credentials here</h2>
 
-        <div v-if="serverError" :class="$style.error">{{ serverError }}</div>
+        <FormServerError
+            :is-visible="!!serverError"
+            :error-content="serverError"
+        />
 
         <form @submit.prevent="onSubmit">
             <MainInput
@@ -85,6 +88,13 @@
                 :rules="passwordRules"
                 v-if="!isSignIn && validVisible"
             ></PasswordValid>
+
+            <NuxtLink
+                to="/Authorization/Recovery/Email"
+                :class="$style.forgottenPassword"
+                >forgot your password?</NuxtLink
+            >
+
             <MainButton
                 :disabled="!isValid || isLoading"
                 :class="$style.button"
@@ -110,8 +120,13 @@
 import MainInput from "~/components/GeneralComponents/MainInput.vue";
 import MainButton from "~/components/GeneralComponents/MainButton.vue";
 import PasswordValid from "~/components/Authorization/PasswordValid.vue";
+import FormServerError from "~/components/GeneralComponents/FormServerError.vue";
 
 import AuthService from "~/service/authService";
+import { useUser } from "~/composables/userState";
+import { ErrorChecker } from "~/utils/ErrorChecker";
+
+import { IUser } from "~/models/User";
 
 export interface Rules {
     [prop: string]: boolean;
@@ -186,12 +201,46 @@ const onSignIn = async () => {
     isLoading.value = false;
 };
 
-const onSubmit = () => {
-    if (isSignIn.value) {
-        onSignIn();
-    } else {
-        onSignUp();
+const onSubmit = async () => {
+    isLoading.value = true;
+
+    let token: string;
+    let userInfo: IUser;
+
+    try {
+        if (isSignIn.value) {
+            const {
+                data: { token: tokenRes, ...userInfoRes },
+            } = await AuthService.login(username.value, password.value);
+
+            token = tokenRes;
+            userInfo = userInfoRes;
+        } else {
+            const {
+                data: { token: tokenRes, ...userInfoRes },
+            } = await AuthService.register(
+                username.value,
+                email.value,
+                password.value
+            );
+
+            token = tokenRes;
+            userInfo = userInfoRes;
+        }
+
+        user.value = userInfo;
+
+        localStorage.setItem("token", token);
+        router.push("/");
+    } catch (e: unknown) {
+        console.error(e);
+        const err = ErrorChecker(e);
+        if (err) {
+            serverError.value = err;
+        }
     }
+
+    isLoading.value = false;
 };
 </script>
 
@@ -201,14 +250,6 @@ const onSubmit = () => {
     max-width: 500px;
 }
 
-.error {
-    margin-top: 20px;
-    padding: 10px 20px;
-    text-align: center;
-    border: 2px solid var(--error, #ff6464);
-    border-radius: 10px;
-    color: var(--error, #ff6464);
-}
 .title {
     margin-top: 11px;
     text-align: center;

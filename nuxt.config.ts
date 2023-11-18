@@ -7,4 +7,7 @@ export default defineNuxtConfig({
             title: "Recipe Helper",
         },
     },
+    build: {
+        transpile: ["vue-toastification"],
+    },
 });
