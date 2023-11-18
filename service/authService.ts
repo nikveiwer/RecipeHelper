@@ -2,6 +2,10 @@ import { $api } from "~/http/axiosInit";
 import { AxiosResponse } from "axios";
 import { RegisterResponse } from "~/models/auth/register";
 import { LoginRequest, LoginResponse } from "~/models/auth/login";
+import {
+    ChangePasswordResponse,
+    SendEmailResponse,
+} from "~/models/auth/recovery";
 
 export default class AuthService {
     static async register(
@@ -23,6 +27,26 @@ export default class AuthService {
         return $api.post<LoginResponse>("/users/login", {
             usernameOrEmail,
             password,
+        });
+    }
+
+    static async sendEmailForRecovery(
+        email: string
+    ): Promise<AxiosResponse<SendEmailResponse>> {
+        return $api.post<SendEmailResponse>("/users/sendRecoverCode", {
+            email,
+        });
+    }
+
+    static async changePassword(
+        email: string,
+        code: string,
+        newPassword: string
+    ): Promise<AxiosResponse<ChangePasswordResponse>> {
+        return $api.post<ChangePasswordResponse>("/users/changePassword", {
+            email,
+            code,
+            newPassword,
         });
     }
 

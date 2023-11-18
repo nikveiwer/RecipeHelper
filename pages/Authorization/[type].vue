@@ -3,7 +3,10 @@
         <h3 :class="$style.title">Welcome{{ isSignIn ? " Back" : "" }}!</h3>
         <h2 :class="$style.subtitle">Please enter your credentials here</h2>
 
-        <div v-if="serverError" :class="$style.error">{{ serverError }}</div>
+        <FormServerError
+            :is-visible="!!serverError"
+            :error-content="serverError"
+        />
 
         <form @submit.prevent="onSubmit">
             <MainInput
@@ -86,7 +89,9 @@
                 v-if="!isSignIn && validVisible"
             ></PasswordValid>
 
-            <NuxtLink :class="$style.forgottenPassword"
+            <NuxtLink
+                to="/Authorization/Recovery/Email"
+                :class="$style.forgottenPassword"
                 >forgot your password?</NuxtLink
             >
 
@@ -115,9 +120,12 @@
 import MainInput from "~/components/GeneralComponents/MainInput.vue";
 import MainButton from "~/components/GeneralComponents/MainButton.vue";
 import PasswordValid from "~/components/Authorization/PasswordValid.vue";
+import FormServerError from "~/components/GeneralComponents/FormServerError.vue";
 
 import AuthService from "~/service/authService";
 import { useUser } from "~/composables/userState";
+import { ErrorChecker } from "~/utils/ErrorChecker";
+
 import { IUser } from "~/models/User";
 
 export interface Rules {
@@ -230,9 +238,12 @@ const onSubmit = async () => {
 
         localStorage.setItem("token", token);
         router.push("/");
-    } catch (e: any) {
-        console.log(e);
-        serverError.value = e.response.data.error;
+    } catch (e: unknown) {
+        console.error(e);
+        const err = ErrorChecker(e);
+        if (err) {
+            serverError.value = err;
+        }
     }
 
     isLoading.value = false;
@@ -245,14 +256,6 @@ const onSubmit = async () => {
     max-width: 500px;
 }
 
-.error {
-    margin-top: 20px;
-    padding: 10px 20px;
-    text-align: center;
-    border: 2px solid var(--error, #ff6464);
-    border-radius: 10px;
-    color: var(--error, #ff6464);
-}
 .title {
     margin-top: 11px;
     text-align: center;
