@@ -148,6 +148,8 @@ const passwordRules: Ref<Rules> = ref({
     "Contains a number": false,
 });
 
+const user = useUser();
+
 const isSignIn = computed(() => route.params.type === "SignIn");
 const isValid = computed(
     () =>
@@ -166,13 +168,17 @@ const onSignUp = async () => {
     isLoading.value = true;
 
     try {
-        const { data } = await AuthService.register(
+        const {
+            data: { token, ...userInfo },
+        } = await AuthService.register(
             username.value,
             email.value,
             password.value
         );
 
-        localStorage.setItem("token", data.token);
+        user.value = userInfo;
+
+        localStorage.setItem("token", token);
         router.push("/");
     } catch (e: any) {
         console.log(e);
@@ -315,5 +321,21 @@ const onSubmit = async () => {
     font-style: normal;
     font-weight: 700;
     letter-spacing: 0.5px;
+}
+
+.forgottenPassword {
+    display: block;
+    margin-top: 24px;
+    text-align: right;
+    color: var(--text-color, #2e3e5c);
+    font-feature-settings: "clig" off, "liga" off;
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 500;
+}
+
+.forgottenPassword:hover {
+    text-decoration: underline;
+    cursor: pointer;
 }
 </style>
