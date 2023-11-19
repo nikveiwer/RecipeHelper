@@ -60,7 +60,7 @@
                 >Enter</MainButton
             >
 
-            <div :class="$style.sendAgainAfter">
+            <div v-show="!canSendAgain" :class="$style.sendAgainAfter">
                 You'll be able to resend the code in:
                 {{ calcExpiresAtTime(timeToResend) }}
             </div>
@@ -86,8 +86,6 @@ import { useToast } from "vue-toastification";
 
 import AuthService from "~/service/authService";
 import { calcExpiresAtTime } from "~/utils/CalcExpiresAtTime";
-import { SendEmailResponse } from "~/models/auth/recovery";
-import { AxiosResponse } from "axios";
 
 export interface Rules {
     [prop: string]: boolean;
@@ -107,8 +105,7 @@ const passwordRules: Ref<Rules> = ref({
     "Contains a number": false,
 });
 
-const serverError: Ref<string> = ref("");
-const isLoading: Ref<boolean> = ref(false);
+const { isLoading, serverError, mutate } = useMutations();
 
 const expiredAtInterval: Ref<number> = ref(0);
 const sendAgainAfterInterval: Ref<number> = ref(0);
@@ -155,8 +152,6 @@ const validate = () => {
 };
 
 const onSubmit = async () => {
-    isLoading.value = true;
-
     const email = recoveryInfo.value?.email;
 
     if (!email) {
@@ -166,30 +161,18 @@ const onSubmit = async () => {
         return;
     }
 
-    try {
-        const { data } = await AuthService.changePassword(
-            email,
-            code.value,
-            newPassword.value
-        );
+    const data = await mutate(() =>
+        AuthService.changePassword(email, code.value, newPassword.value)
+    );
 
+    if (data) {
         toast.success(data.message);
 
         router.push("/Authorization/SignIn");
-    } catch (e) {
-        console.error(e);
-        const err = ErrorChecker(e);
-        if (err) {
-            serverError.value = err;
-        }
     }
-
-    isLoading.value = false;
 };
 
 const onSendAgain = async () => {
-    isLoading.value = true;
-
     const email = recoveryInfo.value?.email;
 
     if (!email) {
@@ -199,25 +182,16 @@ const onSendAgain = async () => {
         return;
     }
 
-    try {
-        const { data } = await AuthService.sendEmailForRecovery(email);
+    const data = await mutate(() => AuthService.sendEmailForRecovery(email));
 
+    if (data) {
         toast.success("We've generated and send the new code!");
 
+        sessionStorage.setItem("expiresAfter", String(data.expiresAfter));
+
         recoveryInfo.value = data;
-
         timeToResend.value = 60;
-    } catch (e) {
-        console.error(e);
-        const err = ErrorChecker(e);
-        if (err) {
-            serverError.value = err;
-        }
     }
-
-    isLoading.value = false;
-
-    // const mutate = useMutations(<SendEmailResponse>() => AuthService.sendEmailForRecovery(email))
 };
 </script>
 
@@ -296,14 +270,16 @@ const onSendAgain = async () => {
 .sendAgainBtn {
     margin-top: 5px;
     width: 100%;
-    background-color: #d0dbea;
-    border: 2px solid #d0dbea;
-    color: var(--secondary-text, #9fa5c0);
+    background-color: var(--text-color, #2e3e5c);
+    border: 2px solid var(--text-color, #2e3e5c);
+    color: white;
 }
 
 .sendAgainBtn:disabled {
-    background-color: #d7f4e6;
+    background-color: white;
+    border: 2px solid #d0dbea;
     cursor: not-allowed;
+    color: var(--secondary-text, #9fa5c0);
 }
 
 .expires {
@@ -318,7 +294,7 @@ const onSendAgain = async () => {
 
 .sendAgainAfter {
     margin-top: 20px;
-    text-align: right;
+    text-align: center;
     color: var(--text-color, #2e3e5c);
     font-size: 15px;
     font-style: normal;

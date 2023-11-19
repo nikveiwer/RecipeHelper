@@ -124,9 +124,10 @@ import FormServerError from "~/components/GeneralComponents/FormServerError.vue"
 
 import AuthService from "~/service/authService";
 import { useUser } from "~/composables/userState";
-import { ErrorChecker } from "~/utils/ErrorChecker";
 
 import { IUser } from "~/models/User";
+import { RegisterResponse } from "~/models/auth/register";
+import { LoginResponse } from "~/models/auth/login";
 
 export interface Rules {
     [prop: string]: boolean;
@@ -139,8 +140,7 @@ const email: Ref<string> = ref("");
 const password: Ref<string> = ref("");
 const username: Ref<string> = ref("");
 
-const serverError: Ref<string> = ref("");
-const isLoading: Ref<boolean> = ref(false);
+const { isLoading, serverError, mutate } = useMutations();
 
 const validVisible: Ref<boolean> = ref(false);
 const passwordRules: Ref<Rules> = ref({
@@ -164,89 +164,32 @@ const validate = () => {
     passwordRules.value["Contains a number"] = /\d/.test(password.value);
 };
 
-const onSignUp = async () => {
-    isLoading.value = true;
-
-    try {
-        const {
-            data: { token, ...userInfo },
-        } = await AuthService.register(
-            username.value,
-            email.value,
-            password.value
-        );
-
-        user.value = userInfo;
-
-        localStorage.setItem("token", token);
-        router.push("/");
-    } catch (e: any) {
-        console.log(e);
-        serverError.value = e.response.data.error;
-    }
-
-    isLoading.value = false;
-};
-
-const onSignIn = async () => {
-    isLoading.value = true;
-
-    try {
-        const { data } = await AuthService.login(
-            username.value,
-            password.value
-        );
-
-        localStorage.setItem("token", data.token);
-        router.push("/");
-    } catch (e: any) {
-        console.log(e);
-        serverError.value = e.response.data.error;
-    }
-
-    isLoading.value = false;
-};
-
 const onSubmit = async () => {
-    isLoading.value = true;
-
     let token: string;
     let userInfo: IUser;
 
-    try {
-        if (isSignIn.value) {
-            const {
-                data: { token: tokenRes, ...userInfoRes },
-            } = await AuthService.login(username.value, password.value);
+    let data: LoginResponse | RegisterResponse | null = null;
 
-            token = tokenRes;
-            userInfo = userInfoRes;
-        } else {
-            const {
-                data: { token: tokenRes, ...userInfoRes },
-            } = await AuthService.register(
-                username.value,
-                email.value,
-                password.value
-            );
+    if (isSignIn.value) {
+        data = await mutate(() =>
+            AuthService.login(username.value, password.value)
+        );
+    } else {
+        data = await mutate(() =>
+            AuthService.register(username.value, email.value, password.value)
+        );
+    }
 
-            token = tokenRes;
-            userInfo = userInfoRes;
-        }
+    if (data) {
+        const { token: tokenRes, ...userInfoRes } = data;
+        token = tokenRes;
+        userInfo = userInfoRes;
 
         user.value = userInfo;
 
         localStorage.setItem("token", token);
         router.push("/");
-    } catch (e: unknown) {
-        console.error(e);
-        const err = ErrorChecker(e);
-        if (err) {
-            serverError.value = err;
-        }
     }
-
-    isLoading.value = false;
 };
 </script>
 
