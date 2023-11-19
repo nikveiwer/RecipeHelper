@@ -7,6 +7,8 @@ export const useMutations = () => {
     const mutate = async <V>(
         reqFunc: () => Promise<AxiosResponse<V>>
     ): Promise<V | null> => {
+        isLoading.value = true;
+
         try {
             const { data } = await reqFunc();
 
