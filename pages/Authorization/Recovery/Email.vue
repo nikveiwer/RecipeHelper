@@ -66,6 +66,7 @@ const onSubmit = async () => {
         recoveryInfo.value = data;
 
         sessionStorage.setItem("expiresAfter", String(data.expiresAfter));
+        sessionStorage.setItem("email", String(data.email));
 
         router.push("/Authorization/Recovery/Password");
     }
