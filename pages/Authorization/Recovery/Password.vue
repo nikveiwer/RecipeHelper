@@ -64,14 +64,14 @@
                 You'll be able to resend the code in:
                 {{ calcExpiresAtTime(timeToResend) }}
             </div>
-
-            <MainButton
-                :disabled="isLoading && !canSendAgain"
-                :class="$style.sendAgainBtn"
-                @click="onSendAgain"
-                >Send again</MainButton
-            >
         </form>
+
+        <MainButton
+            :disabled="isLoading || !canSendAgain"
+            :class="$style.sendAgainBtn"
+            @click="onSendAgain"
+            >Send again</MainButton
+        >
     </section>
 </template>
 
@@ -113,9 +113,11 @@ const timeToResend: Ref<number> = ref(60);
 
 onMounted(() => {
     const timeFromStorage = sessionStorage.getItem("expiresAfter");
+    const emailFromStorage = sessionStorage.getItem("email");
 
-    if (timeFromStorage) {
+    if (timeFromStorage && emailFromStorage) {
         recoveryInfo.value.expiresAfter = +timeFromStorage;
+        recoveryInfo.value.email = emailFromStorage;
     }
 
     expiredAtInterval.value = window.setInterval(() => {
